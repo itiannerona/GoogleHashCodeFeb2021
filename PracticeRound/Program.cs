@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
 
 namespace PracticeRound
 {
@@ -25,52 +23,105 @@ namespace PracticeRound
 
         public PizzaStore()
         {
-
+            PizzaLine = new();
         }
 
         public int PizzasCount { get; init; }
+        public Pizza PizzaLine { get; set; }
+        public Pizza LastPizza { get; set; }
+
+        public void AddPizza(Pizza newPizza)
+        {
+            PizzaLine = AddAndSortPizzaCircle(PizzaLine, newPizza);
+
+            // ** local functions
+            
+            Pizza AddAndSortPizzaCircle(Pizza currentPizza, Pizza newPizza)
+            {
+                if (currentPizza is null)
+                {
+                    currentPizza = newPizza;
+                }
+                else if (currentPizza.IngredientsCount == newPizza.IngredientsCount)
+                {
+                    newPizza.NextPizza = currentPizza.NextPizza;
+                    currentPizza.NextPizza = newPizza;
+                }
+                else if (currentPizza.IngredientsCount > newPizza.IngredientsCount)
+                {
+                    newPizza.NextPizza = currentPizza;
+                    currentPizza = newPizza;
+                }
+                else
+                    currentPizza.NextPizza = AddAndSortPizzaCircle(currentPizza.NextPizza, newPizza);
+                
+                return currentPizza;
+            }
+        }
+
+        public void GetAndSetLastPizza()
+        {
+            LastPizza = FindNullPizza(PizzaLine);
+
+            // ** local function
+            Pizza FindNullPizza(Pizza currentPizza)
+            {
+                if (currentPizza.NextPizza is not null)
+                    return FindNullPizza(currentPizza.NextPizza);
+
+                return currentPizza;
+            }
+        }
+    }
+
+    public class PizzaDeliveryTeam
+    {
         public int TwoMemberTeams { get; init; }
         public int ThreeMemberTeams { get; init; }
         public int FourMemberTeams { get; init; }
-
-        public Pizza PizzaCircle { get; set; }
-        //TODO: highest and lowest ingredients
     }
 
     public record Pizza
     {
         public int IngredientsCount { get; set; }
         public string[] Ingredients { get; set; }
-        public Pizza MoreIngredientsPizza { get; set; }
+        public Pizza NextPizza { get; set; }
     }
 
     public class FileService
     {
-        public static PizzaStore ReadFile(string path)
+        public static (PizzaStore, PizzaDeliveryTeam) ReadFile(string path)
         {
             using StreamReader reader = new(path);
             var firstLine = reader.ReadLine().Split(' ');
-            PizzaStore pizzaStore = new() 
+
+            PizzaDeliveryTeam deliveryTeam = new()
             {
-                PizzasCount = int.Parse(firstLine[0]),
                 TwoMemberTeams = int.Parse(firstLine[1]),
                 ThreeMemberTeams = int.Parse(firstLine[2]),
                 FourMemberTeams = int.Parse(firstLine[3])
             };
+
+            PizzaStore pizzaStore = new() 
+            {
+                PizzasCount = int.Parse(firstLine[0]),
+            };
             
-            pizzaStore.PizzaCircle = ParsePizza(reader.ReadLine().Split());
+            pizzaStore.PizzaLine = ParsePizza(reader.ReadLine().Split());
 
             while (reader.Peek() >= 0)
             {
                 Pizza newPizza = ParsePizza(reader.ReadLine().Split());
-                CompareIngredientsCount(pizzaStore.PizzaCircle, newPizza);
+                pizzaStore.AddPizza(newPizza);
             }
 
-            return pizzaStore;
+            pizzaStore.GetAndSetLastPizza();
+
+            return (pizzaStore, deliveryTeam);
 
             // local functions
 
-            Pizza ParsePizza(string[] unparsedPizza)
+            static Pizza ParsePizza(string[] unparsedPizza)
             {
                 var ingredients = new string[unparsedPizza.Length - 1];
                 Array.Copy(unparsedPizza, 1, ingredients, 0, unparsedPizza.Length - 1);
@@ -81,25 +132,7 @@ namespace PracticeRound
                 };
             }
 
-            void CompareIngredientsCount(Pizza currentPizza, Pizza newPizza)
-            {
-                if (currentPizza is null)
-                {
-                    currentPizza = newPizza;
-                    return;
-                }
-
-                if (currentPizza.IngredientsCount < newPizza.IngredientsCount)
-                {
-                    CompareIngredientsCount(currentPizza.MoreIngredientsPizza, newPizza);
-                    return;
-                }
-                else
-                {
-                    newPizza.MoreIngredientsPizza = currentPizza.MoreIngredientsPizza;
-                    currentPizza.MoreIngredientsPizza = newPizza;
-                }
-            }
+            
         }
     }
 }

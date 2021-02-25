@@ -8,58 +8,22 @@ namespace PracticeRoundTests
     public class ReaderShould
     {
         private const string FilePath = "InputFiles/a_example";
-        private readonly PizzaStore actualPizza;
 
-        public ReaderShould()
-        {
-            actualPizza = new()
-            {
-                PizzasCount = 5,
-                TwoMemberTeams = 1,
-                ThreeMemberTeams = 2,
-                FourMemberTeams = 3,
-            };
-
-            Pizza Pizza1 = new()
-            {
-                IngredientsCount = 3,
-                Ingredients = new string[] { "onion", "pepper", "olive" }
-            };
-
-            Pizza Pizza2 = new()
-            {
-                IngredientsCount = 3,
-                Ingredients = new string[] { "chicken", "mushroom", "pepper" }
-            };
-
-            Pizza Pizza3 = new()
-            {
-                IngredientsCount = 3,
-                Ingredients = new string[] { "tomato", "mushroom", "basil" }
-            };
-
-            Pizza Pizza4 = new()
-            {
-                IngredientsCount = 3,
-                Ingredients = new string[] { "chicken", "basil" }
-            };
-
-            Pizza Pizza5 = new()
-            {
-                IngredientsCount = 3,
-                Ingredients = new string[] { "mushroom", "tomato", "basil" }
-            };
-
-        }
+        public ReaderShould() { }
 
         [Fact]
         public void GetPizzaCountAndTeamNumbers()
         {
-            PizzaStore _sut = FileService.ReadFile(FilePath);
-            Assert.Equal(actualPizza.PizzasCount, _sut.PizzasCount);
-            Assert.Equal(actualPizza.TwoMemberTeams, _sut.TwoMemberTeams);
-            Assert.Equal(actualPizza.ThreeMemberTeams, _sut.ThreeMemberTeams);
-            Assert.Equal(actualPizza.FourMemberTeams, _sut.FourMemberTeams);
+            int pizzasCount = 6;
+            int twoMemberTeams = 1;
+            int threeMemberTeams = 2;
+            int fourMemberTeams = 3;
+
+            var (sutPizzaStore, sutPizzaDeliveryTeam) = FileService.ReadFile(FilePath);
+            Assert.Equal(pizzasCount, sutPizzaStore.PizzasCount);
+            Assert.Equal(twoMemberTeams, sutPizzaDeliveryTeam.TwoMemberTeams);
+            Assert.Equal(threeMemberTeams, sutPizzaDeliveryTeam.ThreeMemberTeams);
+            Assert.Equal(fourMemberTeams, sutPizzaDeliveryTeam.FourMemberTeams);
         }
 
         [Fact]
@@ -83,11 +47,11 @@ namespace PracticeRoundTests
                 Ingredients = new string[] { "chicken", "basil" }
             };
 
-            PizzaStore _sut = FileService.ReadFile(FilePath);
+            var (_sut, _) = FileService.ReadFile(FilePath);
 
-            Assert.True(FoundPizza(_sut.PizzaCircle, Pizza2));
-            Assert.True(FoundPizza(_sut.PizzaCircle, Pizza3));
-            Assert.True(FoundPizza(_sut.PizzaCircle, Pizza4));
+            Assert.True(FoundPizza(_sut.PizzaLine, Pizza2));
+            Assert.True(FoundPizza(_sut.PizzaLine, Pizza3));
+            Assert.True(FoundPizza(_sut.PizzaLine, Pizza4));
         }
 
         [Fact]
@@ -99,9 +63,9 @@ namespace PracticeRoundTests
                 Ingredients = new string[] { "chicken" }
             };
 
-            PizzaStore _sut = FileService.ReadFile(FilePath);
+            var (sut, _) = FileService.ReadFile(FilePath);
 
-            Assert.False(FoundPizza(_sut.PizzaCircle, Pizza2));
+            Assert.False(FoundPizza(sut.PizzaLine, Pizza2));
         }
 
         private bool FoundPizza(Pizza currentPizza, Pizza pizzaToFind)
@@ -112,7 +76,7 @@ namespace PracticeRoundTests
             if (currentPizza.Ingredients.SequenceEqual(pizzaToFind.Ingredients) is true)
                 return true;
 
-            return FoundPizza(currentPizza.MoreIngredientsPizza, pizzaToFind);
+            return FoundPizza(currentPizza.NextPizza, pizzaToFind);
         }
     }
 }
