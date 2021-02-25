@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace PracticeRound
 {
@@ -11,6 +13,8 @@ namespace PracticeRound
         }
     }
 
+    //They have an option to upload one file, so opted to put everything in one file
+
     public class PizzaStore
     {
         private readonly string[] files = 
@@ -21,10 +25,7 @@ namespace PracticeRound
             //"d_many_pizzas.in"
         };
 
-        public PizzaStore()
-        {
-            PizzaLine = new();
-        }
+        public PizzaStore() { }
 
         public int PizzasCount { get; init; }
         public Pizza PizzaLine { get; set; }
@@ -72,6 +73,11 @@ namespace PracticeRound
                 return currentPizza;
             }
         }
+
+        public void DeliverPizzas(int numberOfPizzas)
+        {
+            
+        }
     }
 
     public class PizzaDeliveryTeam
@@ -79,10 +85,20 @@ namespace PracticeRound
         public int TwoMemberTeams { get; init; }
         public int ThreeMemberTeams { get; init; }
         public int FourMemberTeams { get; init; }
+
+        public int CountDistinctIngredients(IList<string[]> ingredientsSet)
+        {
+            IEnumerable<string> combinedSet = Enumerable.Empty<string>();
+            foreach (var set in ingredientsSet)
+                combinedSet = combinedSet.Union(set);
+
+            return combinedSet.Count();
+        }
     }
 
     public record Pizza
     {
+        public int Id { get; init; }
         public int IngredientsCount { get; set; }
         public string[] Ingredients { get; set; }
         public Pizza NextPizza { get; set; }
@@ -106,13 +122,13 @@ namespace PracticeRound
             {
                 PizzasCount = int.Parse(firstLine[0]),
             };
-            
-            pizzaStore.PizzaLine = ParsePizza(reader.ReadLine().Split());
 
+            int id = 0;
             while (reader.Peek() >= 0)
             {
-                Pizza newPizza = ParsePizza(reader.ReadLine().Split());
+                Pizza newPizza = ParsePizza(reader.ReadLine().Split(), id);
                 pizzaStore.AddPizza(newPizza);
+                id++;
             }
 
             pizzaStore.GetAndSetLastPizza();
@@ -121,18 +137,17 @@ namespace PracticeRound
 
             // local functions
 
-            static Pizza ParsePizza(string[] unparsedPizza)
+            static Pizza ParsePizza(string[] unparsedPizza, int id)
             {
                 var ingredients = new string[unparsedPizza.Length - 1];
                 Array.Copy(unparsedPizza, 1, ingredients, 0, unparsedPizza.Length - 1);
                 return new Pizza()
                 {
+                    Id = id,
                     IngredientsCount = int.Parse(unparsedPizza[0]),
                     Ingredients = ingredients
                 };
             }
-
-            
         }
     }
 }

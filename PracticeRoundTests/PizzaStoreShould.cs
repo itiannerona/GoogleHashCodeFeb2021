@@ -89,6 +89,25 @@ namespace PizzaProblemTests
 
             Assert.True(actual.SequenceEqual(sut.LastPizza.Ingredients));
         }
+
+        [Theory]
+        [InlineData(2)]
+        [InlineData(3)]
+        [InlineData(4)]
+        public void RemovePizzasFromBeginningAndLast(int numberOfPizzas)
+        {
+            var filePath = "InputFiles/a_example";
+
+            var (pizzaStore, _) = FileService.ReadFile(filePath);
+
+            var sutFirstPizzaId = pizzaStore.PizzaLine.Id;
+            var sutLastPizzaId = pizzaStore.LastPizza.Id;
+
+            pizzaStore.DeliverPizzas(numberOfPizzas);
+
+            Assert.NotEqual(pizzaStore.PizzaLine.Id, sutFirstPizzaId);
+            Assert.NotEqual(pizzaStore.LastPizza.Id, sutLastPizzaId);
+        }
     }
 }
 
